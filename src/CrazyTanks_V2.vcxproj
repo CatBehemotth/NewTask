@@ -148,6 +148,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Bullet.h" />
+    <ClInclude Include="Constants.h" />
     <ClInclude Include="DisplayCreator.h" />
     <ClInclude Include="GameController.h" />
     <ClInclude Include="MyTank.h" />

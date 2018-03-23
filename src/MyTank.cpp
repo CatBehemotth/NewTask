@@ -12,15 +12,6 @@ MyTank::~MyTank()
 {
 }
 
-const int MyTank::getScore()const
-{
-	return score_;;
-}
-
-void MyTank::setScore(int& score)
-{
-	score_ =score;
-}
 
 void MyTank::update()
 {
@@ -76,3 +67,4 @@ void MyTank::update()
 		fire();
 	}
 }
+

@@ -18,27 +18,29 @@ public:
 	GameController();
 	~GameController();
 
-	void Finish()const;
-
 	void startCircle();
 
 	void calculateBulletsCollision();
-
 	void calculateTanksCollisions();
 	void calculateBulletsFieldCollision();
-	void calculateBulletsBarrierCollision();
+	void calculateBulletsWallCollision();
 	void calculateTankMyTankCollision();
-	void calculateTankBarrierCollision();
-	void addBarrier(const COORD& startCoord);
-	
-	COORD randomBarrierCoord();
+	void calculateTankWallCollision();
+	void addWall(const COORD& startCoord, const char& symbol);
+	int randomTankDirection();
+	size_t ramdom();
 
-	bool isTankBarrierCollision(const Tank& tank, const Wall & barrier);
+	COORD randomTankCoords();
+	COORD randomWallCoord();
+
+	
+	bool isFinish(const Bullet & bullet, const Wall & wall)const;
+	bool isTankWallCollision(const Tank& tank, const Wall & Wall);
 	bool isBulletTankCollision(const Bullet& bullet, const Tank& tank);
-	bool isBulletBarrierCollision(const Bullet& bullet, const Wall & barrier);
+	bool isBulletWallCollision(const Bullet& bullet, const Wall & Wall);
 	bool isBulletFieldCollision(const Bullet& bullet);
 	bool isTankTankCollision(const Tank& enemyTank, const Tank & myTank);
-	bool isFire(const Tank& enemyTank, const MyTank& myTank);
+	bool isFire(const Tank& enemyTank, const Tank& myTank);
 
 	virtual void onFire(const COORD& startCoord, const COORD& direction) override;
 
@@ -46,6 +48,7 @@ private:
 	std::vector<std::shared_ptr<Tank>> mTanks;
 	std::vector<Bullet> mBullets;
 	std::vector<Wall> mWall;
+	//std::vector<Tank> mTanks;
 
 };
 #endif // !GAMECONTROLLER_H_

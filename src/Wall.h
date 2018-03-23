@@ -7,8 +7,8 @@ public:
 	Wall(const COORD& startCoords, const char& symbol);
 	~Wall();
 
-	static const std::vector<COORD>localCoords; 
-	static const std::vector<COORD>localFortressCoords;
+	static const std::vector<COORD>LOKAL_COORDS; 
+	static const std::vector<COORD>LOKAL_FORTRESS_COORD;
 	
 	void draw();
 	void drawFortress();
@@ -18,7 +18,7 @@ public:
 private:
 	char wallSymbol_;
 	COORD startPosition_ ;
-	COORD startFortPosition_ ;
+	static const COORD START_FORT_POSITION_ ;
 
 };
 

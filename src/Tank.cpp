@@ -30,7 +30,7 @@ const int Tank::getHealth()
 
 void Tank::setHealth(int health)
 {
-	tankHealth_ = health;
+	tankHealth_ -= health;
 }
 
 bool Tank::isAlive(const Tank& unit)
@@ -59,6 +59,12 @@ void Tank::setMoveDirection(const COORD& newDirection)
 		direction = newDirection;
 }
 
+void Tank::changeMoveDirection(COORD newMoveDirection)
+{
+	moveDirection.X *= newMoveDirection.X;
+	moveDirection.Y *= newMoveDirection.Y;
+}
+
 const COORD& Tank::getCoord() const
 {
 	return coord;
@@ -81,10 +87,12 @@ void Tank::update()
 	if (coord.X <= 2 || coord.X >= 47)
 	{
 		moveDirection.X *= -1;
+		direction = moveDirection;
 	}
-	else if (coord.Y <= 3 || coord.Y >= 47)
+	else if (coord.Y <= 3 || coord.Y >=47)
 	{
 		moveDirection.Y *= -1;
+		direction = moveDirection;
 	}
 }
 
@@ -92,4 +100,14 @@ void Tank::fire() const
 {
 	COORD startPos = { coord.X + direction.X * 2, coord.Y + direction.Y * 2 };
 	listener.onFire(startPos, direction);
+}
+
+const int Tank::getScore()const
+{
+	return score_;;
+}
+
+void Tank::setScore(int score)
+{
+	score_ += score;
 }
