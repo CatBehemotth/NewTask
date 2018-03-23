@@ -75,6 +75,11 @@ void GameController::startCircle()
 		DisplayCreator::drawScore({ 0,51 },mTanks[0]->getScore());
 		DisplayCreator::drawTime({ 20,51 }, clock());
 
+		if (isVictory())
+		{
+			std::cout << "YOU WIN!";
+			break;
+		}
 		
 		Sleep(150);
 		
@@ -323,6 +328,15 @@ COORD GameController::randomWallCoord()
 void GameController::onFire(const COORD& startCoord, const COORD& direction)
 {
 	mBullets.push_back({ startCoord, direction });
+}
+
+bool GameController::isVictory()
+{
+	if (mTanks.at(0)->getScore()>15)
+	{
+		return true;
+	}
+	return false;
 }
 
 bool GameController::isFinish(const Bullet & bullet, const Wall & wall) const

@@ -33,7 +33,7 @@ public:
 	COORD randomTankCoords();
 	COORD randomWallCoord();
 
-	
+	bool isVictory();
 	bool isFinish(const Bullet & bullet, const Wall & wall)const;
 	bool isTankWallCollision(const Tank& tank, const Wall & Wall);
 	bool isBulletTankCollision(const Bullet& bullet, const Tank& tank);
