@@ -13,6 +13,7 @@ public:
 	void draw();
 	void drawFortress();
 	const COORD& getPosition() const;
+	const COORD& getFortressStartPosition()const;
 	
 
 private:

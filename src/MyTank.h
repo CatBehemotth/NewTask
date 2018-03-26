@@ -10,7 +10,7 @@ public:
 	~MyTank();
 
 	
-	
+	virtual void fire() const override;
 	void update() override;	
 };
 #endif // !MYTANK_H_

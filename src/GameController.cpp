@@ -7,17 +7,18 @@
 
 
 
+
 GameController::GameController()
 {	
-	addWall({ 20,45 }, WALL_SYMBOL);
-	auto tank = std::shared_ptr<MyTank>(new MyTank(*this, 0, 'o', 3, { START_COORDINATES[0] }, { 0, -1 }));
-	tank->getHealth();
-	//tank->setDirection({ -1,0 });
+	addWall({ FORTRESS_POSITION[0] }, WALL_SYMBOL);
+	addWall({ FORTRESS_POSITION[1] }, WALL_SYMBOL);
+	addWall({ FORTRESS_POSITION[2] }, WALL_SYMBOL);
+	auto tank = std::shared_ptr<MyTank>(new MyTank(*this, 0, 'F', 3, { START_COORDINATES[0] }, { 0, -1 }));
 	mTanks.push_back(tank);
 	mTanks.push_back(std::shared_ptr<Tank>(new Tank(*this, '#', ENEMY_HEALTH, { START_COORDINATES[1] }, { -1, 0 })));
 	mTanks.push_back(std::shared_ptr<Tank>(new Tank(*this, '$', ENEMY_HEALTH, { START_COORDINATES[2] }, { 0, -1 })));
 	mTanks.push_back(std::shared_ptr<Tank>(new Tank(*this, '@', ENEMY_HEALTH, { START_COORDINATES[3] }, { -1, 0 })));
-	mTanks.push_back(std::shared_ptr<Tank>(new Tank(*this, '%', ENEMY_HEALTH, { START_COORDINATES[4] }, { 1, 0 })));
+	mTanks.push_back(std::shared_ptr<Tank>(new Tank(*this, '%', ENEMY_HEALTH, { START_COORDINATES[4] }, { 0, 1 })));
 	
 	startCircle();
 }
@@ -32,14 +33,6 @@ void GameController::startCircle()
 	{
 		UpdateDisplay::cleanDisplay(DisplayCreator::FIELD_SIZE, ' ');
 
-		calculateTankMyTankCollision();
-
-		for (auto &bullet : mBullets)
-		{
-			bullet.update();
-
-		}
-
 		for (auto &wall : mWall)
 		{
 			wall.draw();
@@ -50,12 +43,19 @@ void GameController::startCircle()
 			}
 		}
 
+		enemyTankAttack();
+
+		for (auto &bullet : mBullets)
+		{
+			bullet.update();
+		}
+		
 		calculateBulletsWallCollision();
 		calculateTankWallCollision();
 		calculateBulletsFieldCollision();
 		calculateBulletsCollision();
 		calculateTanksCollisions();		
-
+		
 		for (auto &bullet : mBullets)
 		{
 			bullet.draw();
@@ -63,27 +63,32 @@ void GameController::startCircle()
 
 		for (auto &tank : mTanks)
 		{
-			if (mTanks[0]->getHealth()>0)
-			{
-				tank->update();
-				tank->draw();
-			}	
-			//tank->update();		
-			//tank->draw();
+			tank->update();		
+			tank->draw();
 		}
 
-		DisplayCreator::drawScore({ 0,51 },mTanks[0]->getScore());
-		DisplayCreator::drawTime({ 20,51 }, clock());
+		DisplayCreator::drawScore(SCORE_COORD,mTanks[0]->getScore());
+		DisplayCreator::drawTime(TIME_COORD, clock());
 
 		if (isVictory())
 		{
-			std::cout << "YOU WIN!";
+			std::cout << std::endl << std::endl << "\t\tYOU WIN!!!" << std::endl << std::endl << std::endl << std::endl;
 			break;
 		}
 		
-		Sleep(150);
-		
+		if (isFinish())
+		{
+			std::cout << std::endl << std::endl << "\t\tYOU LOSE" << std::endl << std::endl << std::endl << std::endl;
+			break;
+		}
 
+		if (BulletsFortressCollision())
+		{
+			std::cout << std::endl << std::endl << "\t\tYOU LOSE" << std::endl << std::endl << std::endl << std::endl;
+			break;
+		}
+
+		Sleep(250);
 	}
 }
 
@@ -108,32 +113,30 @@ void GameController::calculateBulletsCollision()  //
 			mTanks[0]->setHealth(1);
 		}
 		
-		if (mTanks[0]->getHealth()==0)
-		{
-			exit(1);
-			
-		}
-
 		if (bulletIndex != -1)
 			break;
 	}
 
 	if (bulletIndex != -1)
 	{
-		mBullets.erase(mBullets.begin() + bulletIndex);
-
-		if (tankIndex >0 )
+		if (tankIndex >myTankIndex && mBullets[bulletIndex].getESource() != Bullet::ENEMY_TANK)
 		{
+			mBullets.erase(mBullets.begin() + bulletIndex);
 			mTanks.erase(mTanks.begin() + tankIndex);
 			mTanks[0]->setScore(1);
 		}
-
+		else
+		{
+			mBullets.erase(mBullets.begin() + bulletIndex); 
+		}
 	}
-	if ((mTanks.size() < MAXIMUM_NUMBER_OF_ENEMIES) &&
-		((randomTankCoords().X != randomWallCoord().X)) &&
-		(randomTankCoords().Y != randomWallCoord().Y))
+	if ((mTanks.size() < MAXIMUM_NUMBER_OF_TANK) &&(
+		((randomTankCoords().X != randomWallCoord().X+3)) &&
+		(randomTankCoords().Y != randomWallCoord().Y+3)|| 
+		(((randomTankCoords().X != randomWallCoord().X - 3)) &&
+		(randomTankCoords().Y != randomWallCoord().Y - 3))))
 	{
-		mTanks.push_back(std::shared_ptr<Tank>(new Tank(*this, TANK_BODY[ramdom()], 1,
+		mTanks.push_back(std::shared_ptr<Tank>(new Tank(*this, TANK_BODY[random()], 1,
 			{ randomTankCoords() }, { VARIANTS_OF_DIRECTIONS[randomTankDirection()] })));
 	}
 }
@@ -163,27 +166,23 @@ void GameController::calculateTanksCollisions()
 	}
 	if (otherTankIndex !=-1)
 	{
-		mTanks.at(otherTankIndex)->changeMoveDirection({ 1,-1 });
 		mTanks.at(otherTankIndex)->changeMoveDirection({ -1,1 });
+		mTanks.at(otherTankIndex)->changeMoveDirection({ 1,-1 });
 	}
 }
 
 void GameController::calculateBulletsFieldCollision()
 {
-	int bulletIndex = -1;
+	std::vector<size_t> nIndex;
 
 	for (size_t bullet = 0; bullet < mBullets.size(); ++bullet)
 	{
 		if (isBulletFieldCollision(mBullets[bullet]))
 		{
-			bulletIndex = bullet;
-			break;
+			mBullets.erase(mBullets.begin() + bullet);
 		}
 	}
-	if (bulletIndex != -1)
-	{
-		mBullets.erase(mBullets.begin() + bulletIndex);
-	}
+	
 }
 
 void GameController::calculateBulletsWallCollision()
@@ -197,7 +196,6 @@ void GameController::calculateBulletsWallCollision()
 		{
 			if (isBulletWallCollision(mBullets[bullet], mWall[wall]))
 			{
-				
 				bulletIndex = bullet;
 				wallIndex = wall;
 				break;
@@ -214,31 +212,9 @@ void GameController::calculateBulletsWallCollision()
 	{
 		mWall.erase(mWall.begin() + wallIndex);
 	}
-
-	for (size_t bullet = 0; bullet < mBullets.size(); ++bullet)
-	{
-		for (size_t wall = 0; wall < mWall.size(); ++wall)
-		{
-			if (isFinish(mBullets[bullet], mWall[wall]))
-			{
-
-				bulletIndex = bullet;
-				//wallIndex = wall;
-				break;
-			}
-		}
-		if (bulletIndex != -1)
-			break;
-	}
-	
-	if (fortressIndex != -1)
-	{
-		
-		exit(1);
-	}
 }
 
-void GameController::calculateTankMyTankCollision()
+void GameController::enemyTankAttack()
 {
 	int tankIndex = -1;
 	int myTankIndex = 0;
@@ -252,32 +228,26 @@ void GameController::calculateTankMyTankCollision()
 		if (tankIndex != -1)
 			break;
 	}
-	if (tankIndex != -1)
+	if (tankIndex != -1 )
 	{
-		mTanks.at(tankIndex)->fire();
-		
+		mTanks.at(tankIndex)->fire();		
 	}
 }
 
 void GameController::calculateTankWallCollision()
 {
 	int tankIndex = -1;
-	int wallIndex = -1;
 	for (size_t tank = 0; tank < mTanks.size(); ++tank)
 	{
 		for (size_t wall = 0; wall < mWall.size(); ++wall)
 		{
 			if (isTankWallCollision(*mTanks[tank], mWall[wall]))
 			{
-				tankIndex = tank;
-				wallIndex = wall;
-				
+				tankIndex = tank;				
 				break;
 			}
 		}
 		if (tankIndex != -1)			
-			//mTanks.at(tankIndex)->changeMoveDirection({1,-1});
-			//mTanks[0]->getHealth();
 			break;
 	}
 	if (tankIndex != -1)
@@ -287,15 +257,54 @@ void GameController::calculateTankWallCollision()
 	}
 }
 
+void GameController::myTankWallColliion()
+{
+	int tankIndex = 0;
+
+		for (size_t wall = 0; wall < mWall.size(); ++wall)
+		{
+			if (isTankWallCollision(*mTanks[tankIndex], mWall[wall]))
+			{
+				break;
+			}
+		}	
+	mTanks.at(tankIndex)->changeMoveDirection({ 1,-1 });
+	mTanks.at(tankIndex)->changeMoveDirection({ -1,1 });	
+}
+
+bool GameController::BulletsFortressCollision() 
+{
+	int bulletIndex = -1;
+	int fortressIndex = -1;
+	for (size_t bullet = 0; bullet < mBullets.size(); ++bullet)
+	{
+		for (size_t wall = 0; wall < mWall.size(); ++wall)
+		{
+			if (isBulletFortressCollision(mBullets[bullet], mWall[wall]))
+			{
+				bulletIndex = bullet;
+				fortressIndex = wall;
+				break;
+			}
+		}
+		if (bulletIndex != -1)
+			break;
+	}
+	if (bulletIndex != -1)
+	{
+		return true;
+	}
+	return false;
+
+}
+
 void GameController::addWall(const COORD & startCoord, const char& symbol)
 {
 	mWall.push_back({ startCoord, symbol });
 }
 
-size_t GameController::ramdom()
+size_t GameController::random()
 {
-	srand(time(0));
-
 	return rand() % 4;
 }
 
@@ -310,24 +319,20 @@ COORD GameController::randomTankCoords()
 
 int GameController::randomTankDirection()
 {
-	int tankDirection =0;
-	srand(time(NULL));
-	tankDirection = rand() % 5;
-	return tankDirection;
+	return rand() % 5;;
 }
 
 COORD GameController::randomWallCoord()
 {
 	COORD wallCoord;
-	srand(time(0));
 	wallCoord.X = rand() % 45 + 2;
 	wallCoord.Y = rand() % 45 + 2;
 	return wallCoord;
 }
 
-void GameController::onFire(const COORD& startCoord, const COORD& direction)
+void GameController::onFire(const COORD& startCoord, const COORD& direction, Bullet::eSource source)
 {
-	mBullets.push_back({ startCoord, direction });
+	mBullets.push_back({ startCoord, direction ,source });
 }
 
 bool GameController::isVictory()
@@ -339,19 +344,16 @@ bool GameController::isVictory()
 	return false;
 }
 
-bool GameController::isFinish(const Bullet & bullet, const Wall & wall) const
+bool GameController::isFinish() const
 {
-	auto wallLocalCoord = COORD	{20,48};
-	auto bulletCoord = bullet.getPosition();
-
-	for (auto &local_coord : Wall::LOKAL_COORDS)
+	if ((mTanks[0]->getHealth() == 0) ) 
 	{
-		COORD localCoord = { local_coord.X + bulletCoord.X, local_coord.Y + bulletCoord.Y };
-
-		if (wallLocalCoord.X == localCoord.X && wallLocalCoord.Y == localCoord.Y)
-			return true;
+		return true;
 	}
-	return false;
+	else
+	{
+		return false;
+	}	
 }
 
 bool GameController::isTankWallCollision(const Tank & tank, const Wall & wall)
@@ -362,10 +364,10 @@ bool GameController::isTankWallCollision(const Tank & tank, const Wall & wall)
 	for (auto &local_coord : Tank::localCoords)
 	{
 		COORD localCoord = { local_coord.X + tankLocalCoord.X, local_coord.Y + tankLocalCoord.Y };
-		if (wallCoord.X == localCoord.X && wallCoord.Y == localCoord.Y + 2 ||
-			(wallCoord.X == localCoord.X && wallCoord.Y == localCoord.Y - 2)||
-			(wallCoord.X == localCoord.X+2 && wallCoord.Y == localCoord.Y ) ||
-			(wallCoord.X == localCoord.X-2 && wallCoord.Y == localCoord.Y ))
+		if (wallCoord.X == localCoord.X && wallCoord.Y == localCoord.Y + 4 ||
+			(wallCoord.X == localCoord.X && wallCoord.Y == localCoord.Y - 4)||
+			(wallCoord.X == localCoord.X+4 && wallCoord.Y == localCoord.Y ) ||
+			(wallCoord.X == localCoord.X-4 && wallCoord.Y == localCoord.Y ))
 				return true;			
 	}
 	return false;
@@ -440,7 +442,23 @@ bool GameController::isFire(const Tank & enemyTank, const Tank & myTank)
 	{
 		COORD localCoord = { local_coord.X + enemyTankLocalCoord.X, local_coord.Y + enemyTankLocalCoord.Y };
 		if ((myTankLocalCoord.X == localCoord.X || myTankLocalCoord.Y == localCoord.Y ))
+			
 		   
+			return true;
+	}
+	return false;
+}
+
+bool GameController::isBulletFortressCollision(const Bullet & bullet, const Wall & fortress)
+{
+	auto wallLocalCoord = fortress.getFortressStartPosition();
+	auto bulletCoord = bullet.getPosition();
+
+	for (auto &local_coord : Wall::LOKAL_FORTRESS_COORD)
+	{
+		COORD localCoord = { local_coord.X + wallLocalCoord.X, local_coord.Y + wallLocalCoord.Y };
+
+		if (bulletCoord.X == localCoord.X && bulletCoord.Y == localCoord.Y)
 			return true;
 	}
 	return false;

@@ -9,22 +9,23 @@ public:
 	Tank(TankListener& _listener, const char& element, const int& health,
 												 const COORD& startCoord,
 												 const COORD& directionOfTank);
-	~Tank();
+	virtual ~Tank();
 
 	static const std::vector<COORD>localCoords;
 
 	const int getHealth();
-	void setHealth(int health = 1);
-	bool isAlive(const Tank& unit);
+	void setHealth(int health );
 	void setDirection(const COORD& newDirection);
 	void setMoveDirection(const COORD& newDirection);	
 	void changeMoveDirection(COORD newMoveDirection);
+	const COORD getMoveDirection()const;
 	const COORD& getCoord() const;
-	void fire() const;
+	virtual void fire() const;
 	const int getScore() const;
 	void setScore(int score);
 	virtual void draw();
 	virtual void update();
+	
 
 
 protected:
@@ -35,9 +36,9 @@ protected:
 
 	TankListener &listener;
 
-	COORD coord = { 5, 5 };
-	COORD moveDirection;
-	COORD direction;
+	COORD coord_ = { 5, 5 };
+	COORD moveDirection_;
+	COORD direction_;
 
 	
 

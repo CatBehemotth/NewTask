@@ -10,14 +10,14 @@ const std::vector<COORD> Tank::localCoords = { { -1, -1 },{ 0, -1 },{ 1, -1 },
 Tank::Tank(TankListener & _listener, const char & element, const int & health, 
 									const COORD& startCoord, 
 									const COORD& directionOfTank):
-													coord(startCoord),
+													coord_(startCoord),
 													tankBody_(element),
-													listener(_listener)
+													listener(_listener),
+													tankHealth_(health),
+													moveDirection_(directionOfTank),
+													direction_(moveDirection_)
 {
-	tankHealth_ = health;
-	moveDirection = directionOfTank;
-	direction = moveDirection;
-}
+}	
 
 Tank::~Tank()
 {
@@ -33,73 +33,65 @@ void Tank::setHealth(int health)
 	tankHealth_ -= health;
 }
 
-bool Tank::isAlive(const Tank& unit)
-{
-	if (unit.tankHealth_  > 0)
-	{
-		return true;
-	}
-	else
-	{
-		return false;
-	}
-	
-}
-
 void Tank::setDirection(const COORD& newDirection)
 {
-	direction = newDirection;
+	direction_ = newDirection;
 }
 
 void Tank::setMoveDirection(const COORD& newDirection)
 {
-	moveDirection = newDirection;
+	moveDirection_ = newDirection;
 
 	if (newDirection.X != 0 && newDirection.Y !=0)
-		direction = newDirection;
+		direction_ = newDirection;
 }
 
-void Tank::changeMoveDirection(COORD newMoveDirection)
+void Tank::changeMoveDirection(COORD newmoveDirection_)
 {
-	moveDirection.X *= newMoveDirection.X;
-	moveDirection.Y *= newMoveDirection.Y;
+	moveDirection_.X *= newmoveDirection_.X;
+	moveDirection_.Y *= newmoveDirection_.Y;
+}
+
+const COORD Tank::getMoveDirection() const
+{
+	return moveDirection_;
 }
 
 const COORD& Tank::getCoord() const
 {
-	return coord;
+	return coord_;
 }
 
 void Tank::draw()
 {
 	for (auto &local_coord : localCoords)
 	{
-		COORD localCoord = { local_coord.X + coord.X, local_coord.Y + coord.Y };
+		COORD localCoord = { local_coord.X + coord_.X, local_coord.Y + coord_.Y };
 		UpdateDisplay::drowElement(localCoord, tankBody_);
 	}
 }
 
 void Tank::update()
 {
-	coord.X += moveDirection.X;
-	coord.Y += moveDirection.Y;
+	coord_.X += moveDirection_.X;
+	coord_.Y += moveDirection_.Y;
 
-	if (coord.X <= 2 || coord.X >= 47)
+	if (coord_.X <= 2 || coord_.X >= 47)
 	{
-		moveDirection.X *= -1;
-		direction = moveDirection;
+		moveDirection_.X *= -1;
+		direction_ = moveDirection_;
 	}
-	else if (coord.Y <= 3 || coord.Y >=47)
+	else if (coord_.Y <= 3 || coord_.Y >=47)
 	{
-		moveDirection.Y *= -1;
-		direction = moveDirection;
+		moveDirection_.Y *= -1;
+		direction_ = moveDirection_;
 	}
 }
 
 void Tank::fire() const
 {
-	COORD startPos = { coord.X + direction.X * 2, coord.Y + direction.Y * 2 };
-	listener.onFire(startPos, direction);
+	COORD startPos = { coord_.X + direction_.X * 2, coord_.Y + direction_.Y * 2 };
+	listener.onFire(startPos, direction_, Bullet::ENEMY_TANK);
 }
 
 const int Tank::getScore()const

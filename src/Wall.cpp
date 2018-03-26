@@ -3,7 +3,7 @@
 #include "UpdateDisplay.h"
 
 const std::vector<COORD>Wall::LOKAL_COORDS = { { -1, 0 },{ 0, 0 },{ 1, 0 },{ 0, 1 },{ 0, -1 } };
-const std::vector<COORD>Wall::LOKAL_FORTRESS_COORD = { {-1,0},{-1,1},{0,0},{1,1},{1,0} };
+const std::vector<COORD>Wall::LOKAL_FORTRESS_COORD = { {-1,0},{-1,1},{0,0},{1,1},{1,0},{0,1} };
 const COORD Wall::START_FORT_POSITION_ = {20,47};
 
 Wall::Wall(const COORD& startCoords, const char& symbol):
@@ -31,12 +31,17 @@ void Wall::drawFortress()
 	for (auto &local_coord : LOKAL_FORTRESS_COORD)
 	{
 		COORD localCoord = { local_coord.X + START_FORT_POSITION_.X, local_coord.Y + START_FORT_POSITION_.Y };
-		UpdateDisplay::drowElement(localCoord, wallSymbol_);
-		UpdateDisplay::drowElement({20,48}, '$');
+		UpdateDisplay::drowElement(localCoord, '$');
+		
 	}
 }
 
 const COORD& Wall::getPosition() const
 {
 	return startPosition_;
+}
+
+const COORD & Wall::getFortressStartPosition() const
+{
+	return START_FORT_POSITION_;
 }

@@ -13,54 +13,60 @@ MyTank::~MyTank()
 }
 
 
+void MyTank::fire() const
+{
+		COORD startPos = { coord_.X + direction_.X * 2, coord_.Y + direction_.Y * 2 };
+		listener.onFire(startPos, direction_, Bullet::MYTANK);
+}
+
 void MyTank::update()
 {
-	if (GetAsyncKeyState(VK_UP) && coord.Y > 3)
+	if (GetAsyncKeyState(VK_UP) && coord_.Y > 3)
 	{
-		if (coord.Y == 3)
+		if (coord_.Y == 3)
 		{
-			--coord.Y;
+			--coord_.Y;
 		}
 		else
-			coord.Y -= 1;
+			coord_.Y -= 1;
 
-		direction.Y = -1;
-		moveDirection.Y = -1;
-		direction.X = 0;
-		moveDirection.X = 0;
+		direction_.Y = -1;
+		moveDirection_.Y = -1;
+		direction_.X = 0;
+		moveDirection_.X = 0;
 	}
-	else if (GetAsyncKeyState(VK_LEFT) && coord.X>3)
+	else if (GetAsyncKeyState(VK_LEFT) && coord_.X>3)
 	{
-		coord.X -= 1;
+		coord_.X -= 1;
 
-		direction.X = -1;
-		moveDirection.X = -1;
-		direction.Y = 0;
-		moveDirection.Y = 0;
+		direction_.X = -1;
+		moveDirection_.X = -1;
+		direction_.Y = 0;
+		moveDirection_.Y = 0;
 	}
-	else if (GetAsyncKeyState(VK_RIGHT) && coord.X<46)
+	else if (GetAsyncKeyState(VK_RIGHT) && coord_.X<47)
 	{
-		if (coord.X == 46)
+		if (coord_.X == 46)
 		{
-			++coord.X;
+			++coord_.X;
 		}
 		else
-			coord.X += 1;
+			coord_.X += 1;
 
-		direction.X = 1;
-		moveDirection.X = 1;
+		direction_.X = 1;
+		moveDirection_.X = 1;
 
-		direction.Y = 0;
-		moveDirection.Y = 0;
+		direction_.Y = 0;
+		moveDirection_.Y = 0;
 	}
-	else if (GetAsyncKeyState(VK_DOWN) && coord.Y<46)
+	else if (GetAsyncKeyState(VK_DOWN) && coord_.Y<47)
 	{
-		coord.Y += 1;
+		coord_.Y += 1;
 
-		direction.Y = 1;
-		moveDirection.Y = 1;
-		direction.X = 0;
-		moveDirection.X = 0;
+		direction_.Y = 1;
+		moveDirection_.Y = 1;
+		direction_.X = 0;
+		moveDirection_.X = 0;
 	}
 	else if (GetAsyncKeyState(VK_SPACE))
 	{

@@ -11,7 +11,7 @@ public:
 	static const COORD WINDOW_SIZE ;
 	static const COORD FIELD_SIZE ;
 
-	static void drawScore(const std::pair<short, short>& elementPos, int currentScore);
-	static void drawTime(const std::pair<short, short>& elementPos, clock_t currentTime);
+	static void drawScore(const COORD& elementPos, int currentScore);
+	static void drawTime(const COORD& elementPos, clock_t currentTime);
 };
 #endif // !DISPLAYCREATOR_H_
